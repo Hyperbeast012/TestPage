@@ -7,6 +7,15 @@
   <title>Customer Registration</title>
   <script
   src="https://cdn.c360a.salesforce.com/beacon/c360a/58345f27-146b-4e73-a7e1-6d39c1f7abcb/scripts/c360a.min.js">
+      SalesforceInteractions.setLoggingLevel(4);
+
+  SalesforceInteractions.init()
+    .then(() => {
+      console.log("Salesforce Data Cloud SDK initialized successfully");
+    })
+    .catch((error) => {
+      console.error("SDK initialization failed:", error);
+    });
   </script>
   <style>
     body {
