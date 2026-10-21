@@ -77,26 +77,39 @@
     <p id="message" role="status"></p>
   </div>
 
-  <script>
-    document.getElementById("customerForm")
-      .addEventListener("submit", function(event) {
-        event.preventDefault();
+ <script>
+  document.getElementById("customerForm").addEventListener("submit", function (event) {
+    event.preventDefault();
 
-        const customer = {
-          name: document.getElementById("name").value,
-          email: document.getElementById("email").value,
-          phone: document.getElementById("phone").value,
-          interest: document.getElementById("interest").value
-        };
+    const customer = {
+      name: document.getElementById("name").value.trim(),
+      email: document.getElementById("email").value.trim(),
+      phone: document.getElementById("phone").value.trim(),
+      interest: document.getElementById("interest").value
+    };
 
-        // Demo only: this does not save or send data to Data Cloud.
-        console.log("Form submission:", customer);
+    console.log("Form submission:", customer);
 
-        document.getElementById("message").textContent =
-          "Form submitted successfully for this demo!";
-
-        this.reset();
+    try {
+      SalesforceInteractions.sendEvent({
+        interaction: {
+          name: "Customer Registration Submitted"
+        },
+        attributes: {
+          productInterest: customer.interest
+        }
       });
-  </script>
+
+      console.log("Registration interaction submitted to the SDK.");
+    } catch (error) {
+      console.error("Could not send registration interaction:", error);
+    }
+
+    document.getElementById("message").textContent =
+      "Form submitted successfully for this demo!";
+
+    this.reset();
+  });
+</script>
 </body>
 </html>
