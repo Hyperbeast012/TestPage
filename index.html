@@ -1,27 +1,33 @@
 
 <!DOCTYPE html>
-<html lang="en"> 
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Customer Registration</title>
-   <script src="https://cdn.c360a.salesforce.com/beacon/c360a/58345f27-146b-4e73-a7e1-6d39c1f7abcb/scripts/c360a.min.js"></script>
+
+  <script src="https://cdn.c360a.salesforce.com/beacon/c360a/58345f27-146b-4e73-a7e1-6d39c1f7abcb/scripts/c360a.min.js"></script>
 
   <script>
     SalesforceInteractions.setLoggingLevel(4);
 
-    SalesforceInteractions.init({
+    const sdkReady = SalesforceInteractions.init({
       consents: []
     }).then(() => {
       console.log("Salesforce SDK initialized");
-    }).catch(console.error);
+    }).catch((error) => {
+      console.error("Salesforce SDK initialization failed:", error);
+      throw error;
+    });
   </script>
+
   <style>
     body {
       font-family: Arial, sans-serif;
       background: #f3f6fb;
       padding: 40px 16px;
     }
+
     .container {
       max-width: 450px;
       margin: auto;
@@ -30,13 +36,19 @@
       border-radius: 12px;
       box-shadow: 0 3px 15px #0001;
     }
-    label { display: block; margin-top: 15px; }
+
+    label {
+      display: block;
+      margin-top: 15px;
+    }
+
     input, select, button {
       box-sizing: border-box;
       width: 100%;
       padding: 11px;
       margin-top: 7px;
     }
+
     button {
       margin-top: 22px;
       background: #1769aa;
@@ -45,9 +57,24 @@
       border-radius: 5px;
       cursor: pointer;
     }
-    #message { margin-top: 15px; }
+
+    .consent-option {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+    }
+
+    .consent-option input {
+      width: auto;
+      margin-top: 18px;
+    }
+
+    #message {
+      margin-top: 15px;
+    }
   </style>
 </head>
+
 <body>
   <div class="container">
     <h2>Customer Registration</h2>
@@ -71,45 +98,74 @@
         <option value="Tablet">Tablet</option>
       </select>
 
+      <label class="consent-option" for="analyticsConsent">
+        <input type="checkbox" id="analyticsConsent">
+        <span>
+          I agree to allow this website to collect analytics about my
+          interactions for the purposes described in its privacy notice.
+        </span>
+      </label>
+
       <button type="submit">Submit Details</button>
     </form>
 
     <p id="message" role="status"></p>
   </div>
 
- <script>
-  document.getElementById("customerForm").addEventListener("submit", function (event) {
-    event.preventDefault();
+  <script>
+    document.getElementById("customerForm")
+      .addEventListener("submit", async function(event) {
+        event.preventDefault();
 
-    const customer = {
-      name: document.getElementById("name").value.trim(),
-      email: document.getElementById("email").value.trim(),
-      phone: document.getElementById("phone").value.trim(),
-      interest: document.getElementById("interest").value
-    };
+        const message = document.getElementById("message");
+        const consentGiven =
+          document.getElementById("analyticsConsent").checked;
 
-    console.log("Form submission:", customer);
+        try {
+          await sdkReady;
 
-    try {
-      SalesforceInteractions.sendEvent({
-        interaction: {
-          name: "Customer Registration Submitted"
-        },
-        attributes: {
-          productInterest: customer.interest
+          if (!consentGiven) {
+            message.textContent =
+              "Please provide analytics consent before sending an analytics event.";
+            return;
+          }
+
+          const customer = {
+            name: document.getElementById("name").value.trim(),
+            email: document.getElementById("email").value.trim(),
+            phone: document.getElementById("phone").value.trim(),
+            interest: document.getElementById("interest").value
+          };
+
+          // Record the visitor's explicit analytics choice.
+          SalesforceInteractions.updateConsents({
+            provider: "Website Consent Checkbox",
+            purpose: SalesforceInteractions.ConsentPurpose.Tracking,
+            status: SalesforceInteractions.ConsentStatus.OptIn
+          });
+
+          // Send the registration interaction after consent is updated.
+          SalesforceInteractions.sendEvent({
+            interaction: {
+              name: "Customer Registration Submitted"
+            },
+            attributes: {
+              productInterest: customer.interest
+            }
+          });
+
+          message.textContent =
+            "Registration interaction submitted to the SDK. Data Cloud ingestion is not yet verified.";
+
+          console.log("Registration interaction submitted to SDK.");
+          this.reset();
+
+        } catch (error) {
+          console.error("Registration event error:", error);
+          message.textContent =
+            "The registration event could not be submitted. Check the browser console.";
         }
       });
-
-      console.log("Registration interaction submitted to the SDK.");
-    } catch (error) {
-      console.error("Could not send registration interaction:", error);
-    }
-
-    document.getElementById("message").textContent =
-      "Form submitted successfully for this demo!";
-
-    this.reset();
-  });
-</script>
+  </script>
 </body>
 </html>
