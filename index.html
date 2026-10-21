@@ -57,16 +57,28 @@
       cursor: pointer;
     }
 
-    .consent-option {
-      display: flex;
-      align-items: flex-start;
-      gap: 8px;
-    }
+    
+.consent-option {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin-top: 20px;
+  font-size: 14px;
+  line-height: 1.5;
+  cursor: pointer;
+}
 
-    .consent-option input {
-      width: auto;
-      margin-top: 18px;
-    }
+.consent-option input[type="checkbox"] {
+  appearance: auto;
+  -webkit-appearance: checkbox;
+  flex: 0 0 18px;
+  width: 18px;
+  height: 18px;
+  margin: 3px 0 0;
+  padding: 0;
+  cursor: pointer;
+}
+
 
     #message {
       margin-top: 15px;
@@ -104,6 +116,7 @@
           interactions for the purposes described in its privacy notice.
         </span>
       </label>
+      
 
       <button type="submit">Submit Details</button>
     </form>
